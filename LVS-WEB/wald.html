@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <!-- © Dev-MB | dev-mb.dev -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Dev-MB | SimulatorMB#9999">
+    <meta name="publisher" content="Dev-MB | fwzei.app">
+
+    <title>LVS-Display Zeithain</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            padding: 2rem;
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            /* gap: .5rem; */
+            width: 100%;
+            height: 100%;
+        }
+
+        .left {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .right-top,
+        .right-bottom {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .label {
+            color: #fff;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-align: left;
+            font-family: Arial, sans-serif;
+            flex: 0 0 auto;
+        }
+
+        .img-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left">
+            <div class="label">Heute</div>
+            <div class="img-wrapper">
+                <img id="img-heute" src="" alt="Heute">
+            </div>
+        </div>
+        <div class="right">
+            <div class="right-top">
+                <div class="label">Morgen</div>
+                <div class="img-wrapper">
+                    <img id="img-morgen" src="" alt="Morgen">
+                </div>
+            </div>
+            <div class="right-bottom">
+                <div class="label">Übermorgen</div>
+                <div class="img-wrapper">
+                    <img id="img-uebermorgen" src="" alt="Übermorgen">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // © Dev-MB | dev-mb.dev
+
+        function getFormattedDate(date) {
+            const tag = String(date.getDate()).padStart(2, '0');
+            const monat = String(date.getMonth() + 1).padStart(2, '0');
+            return monat + tag;
+        }
+
+        function loadImages() {
+            const today = new Date();
+            
+            // Heute
+            const heute = new Date(today);
+            const srcHeute = 'https://www.mais.de/sachsenforst/wb_' + getFormattedDate(heute) + 'V.png';
+            document.getElementById('img-heute').src = srcHeute;
+            
+            // Morgen (+1 Tag)
+            const morgen = new Date(today);
+            morgen.setDate(morgen.getDate() + 1);
+            const srcMorgen = 'https://www.mais.de/sachsenforst/wb_' + getFormattedDate(morgen) + 'P0.png';
+            document.getElementById('img-morgen').src = srcMorgen;
+            
+            // Übermorgen (+2 Tage)
+            const uebermorgen = new Date(today);
+            uebermorgen.setDate(uebermorgen.getDate() + 2);
+            const srcUebermorgen = 'https://www.mais.de/sachsenforst/wb_' + getFormattedDate(uebermorgen) + 'P0.png';
+            document.getElementById('img-uebermorgen').src = srcUebermorgen;
+        }
+
+        // Initialisierung beim Laden der Seite
+        loadImages();
+    </script>
+</body>
+
+</html>

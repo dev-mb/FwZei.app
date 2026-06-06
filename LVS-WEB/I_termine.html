@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <!-- © Dev-MB | dev-mb.dev -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Dev-MB | SimulatorMB#9999">
+    <meta name="publisher" content="Dev-MB | fwzei.app">
+
+    <title>Termine - LVS Display Zeithain</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-container {
+            width: 100%;
+            height: 100%;
+            margin: auto 0;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            flex: 0 0 auto;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #333;
+            font-size: 0.9rem;
+            color: #999;
+            flex: 0 0 auto;
+        }
+
+        .footer .last-update {
+            color: #999;
+            position: relative;
+        }
+
+        .footer .last-update.loading {
+            color: #4CAF50;
+        }
+
+        .footer .copyright {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer .copyright a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer .copyright a:hover {
+            color: #45a049;
+            text-decoration: underline;
+        }
+
+        .termine-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+            overflow: hidden;
+            padding: 0 1rem;
+            min-height: 0;
+        }
+
+        .naechster-termin-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .kommende-termine-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2rem;
+            overflow-y: auto;
+        }
+
+        .termin {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            border-left: 6px solid #555;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .termin.vergangen {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-left: 6px solid #555;
+        }
+
+        .termin.vergangen::before {
+            content: 'VERGANGEN';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            background: #555;
+            color: #999;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .termin.naechster {
+            background: linear-gradient(135deg, #2d5f2e 0%, #1e4620 100%);
+            border-left: 6px solid #2d5f2e;
+            display: flex;
+            flex-direction: column;
+            height: 40%;
+            padding: 2rem;
+        }
+
+
+        .termin.naechster .termin-header {
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .termin.naechster .termin-datum {
+            font-size: 3rem;
+        }
+
+        .termin.naechster .termin-tag {
+            font-size: 1.6rem;
+        }
+
+        .termin.naechster .termin-zeit {
+            font-size: 2.2rem;
+            padding: 0.6rem 1.5rem;
+        }
+
+        .termin.naechster .termin-titel {
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .termin.naechster .termin-beschreibung {
+            font-size: 1.6rem;
+            line-height: 1.8;
+        }
+
+        .termin.naechster .termin-info {
+
+            font-size: 1.8rem;
+            padding: 0.6rem 1.2rem;
+        }
+
+        .termin.naechster .termin-content-row {
+            gap: 2.5rem;
+        }
+
+        .termin.naechster::before {
+            content: '▶ NÄCHSTER TERMIN';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            background: #4CAF50;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .termin.kommend {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border-left: 4px solid #4c6faf;
+            padding: 1rem;
+            min-height: 20%;
+        }
+
+        .termin.kommend::before {
+            content: 'KOMMEND';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            opacity: 0.6;
+            background: #4c6faf;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .termin.kommend .termin-datum {
+            font-size: 1.4rem;
+        }
+
+        .termin.kommend .termin-zeit {
+            font-size: 1.2rem;
+            padding: 0.3rem 0.6rem;
+        }
+
+        .termin.kommend .termin-titel {
+            font-size: 1.4rem;
+        }
+
+        .termin.kommend .termin-info {
+            font-size: 1.2rem;
+        }
+
+        .termin.kommend .termin-tag {
+            font-size: 1rem;
+        }
+
+        .termin-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .termin-date-time {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .termin-datum {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .termin.vergangen .termin-datum {
+            color: #999;
+        }
+
+        .termin-tag {
+            font-size: 1rem;
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        .termin.vergangen .termin-tag {
+            color: #888;
+        }
+
+        .termin-zeit {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .termin.vergangen .termin-zeit {
+            background: rgba(117, 117, 117, 0.2);
+            border-color: #666;
+            color: #999;
+        }
+
+        .termin-content-row {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            flex: 1;
+            padding-right: 200px;
+        }
+
+        .termin-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .termin-titel {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-bottom: 0.8rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .termin.vergangen .termin-titel {
+            color: #bbb;
+        }
+
+        .termin-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+            text-align: right;
+            position: absolute;
+            bottom: 1.2rem;
+            right: 1.5rem;
+        }
+
+        .termin-info {
+            font-size: 1.6rem;
+            color: #fff;
+            line-height: 1.4;
+            font-weight: bold;
+            white-space: nowrap;
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .termin.vergangen .termin-info {
+            color: #bbb;
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: #666;
+        }
+
+        .termin-beschreibung {
+            font-size: 1rem;
+            color: #ccc;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+
+        .termin-beschreibung ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            list-style: none;
+        }
+
+        .termin-beschreibung ul li {
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .termin-beschreibung ul li::before {
+            content: '▪';
+            position: absolute;
+            left: 0;
+            color: #fff;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.3rem;
+            color: #999;
+        }
+
+        /* Scrollbar Styling */
+        .termine-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .termine-container::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .termine-container::-webkit-scrollbar-thumb {
+            background: #4c6faf;
+            border-radius: 5px;
+        }
+
+        .termine-container::-webkit-scrollbar-thumb:hover {
+            background: #3b5a9a;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Termine</h1>
+        </div>
+
+        <div id="content" class="termine-container">
+            <div class="naechster-termin-container" id="naechster-termin">
+                <!-- Nächster Termin wird hier geladen -->
+            </div>
+            <div class="kommende-termine-container" id="kommende-termine">
+                <!-- Kommende Termine werden hier geladen -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="last-update">Letzte Aktualisierung: <span id="last-update">-</span></div>
+            <div class="copyright">© dev-mb.dev</div>
+        </div>
+    </div>
+
+    <script>
+        // © Dev-MB | dev-mb.dev
+
+        // HIER DEINE GOOGLE APPS SCRIPT WEB APP URL EINFÜGEN
+        // Nach der Einrichtung (siehe google-apps-script.js) erhältst du eine URL
+        // Format: https://script.google.com/macros/s/DEIN_SCRIPT_ID/exec
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOPAh2RKPjC3JkVs_EY7Fot4A7pGHeOWao2t2bJMG5k2gwn082pjFbV0wkQULalL8VGw/exec';
+
+        function parseDatum(dateStr) {
+            // Wenn bereits ein Date-Objekt, direkt zurückgeben
+            if (dateStr instanceof Date) {
+                return dateStr;
+            }
+            
+            // Wenn String, versuchen zu parsen
+            if (typeof dateStr === 'string') {
+                // Versuche als ISO-String oder Date-String
+                const dateFromString = new Date(dateStr);
+                if (!isNaN(dateFromString.getTime())) {
+                    return dateFromString;
+                }
+                
+                // Fallback: Manuelles Parsing für DD.MM.YYYY Format
+                const parts = dateStr.match(/(\d+)[.\-\/](\d+)[.\-\/](\d+)/);
+                if (!parts) return null;
+
+                let day, month, year;
+                if (parts[3].length === 4) {
+                    // DD.MM.YYYY oder DD/MM/YYYY
+                    day = parseInt(parts[1]);
+                    month = parseInt(parts[2]) - 1;
+                    year = parseInt(parts[3]);
+                } else {
+                    // YYYY-MM-DD
+                    year = parseInt(parts[1]);
+                    month = parseInt(parts[2]) - 1;
+                    day = parseInt(parts[3]);
+                }
+
+                return new Date(year, month, day);
+            }
+            
+            return null;
+        }
+
+        function formatDatum(date) {
+            const tag = String(date.getDate()).padStart(2, '0');
+            const monat = String(date.getMonth() + 1).padStart(2, '0');
+            const jahr = date.getFullYear();
+            return `${tag}.${monat}.${jahr}`;
+        }
+
+        function getWochentag(date) {
+            const tage = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+            return tage[date.getDay()];
+        }
+
+        function getTageString(tage) {
+            if (tage === 0) return 'Heute';
+            if (tage === 1) return 'Morgen';
+            if (tage === -1) return 'Gestern';
+            if (tage > 0) return `in ${tage} Tagen`;
+            return `vor ${Math.abs(tage)} Tagen`;
+        }
+
+        function formatText(text) {
+            if (!text) return '';
+            
+            // Ersetze "- " am Zeilenanfang mit Aufzählungen
+            const lines = text.split('\n');
+            let html = '';
+            let inList = false;
+            
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('- ')) {
+                    if (!inList) {
+                        html += '<ul>';
+                        inList = true;
+                    }
+                    html += `<li>${trimmed.substring(2)}</li>`;
+                } else {
+                    if (inList) {
+                        html += '</ul>';
+                        inList = false;
+                    }
+                    if (trimmed) {
+                        html += trimmed + '<br>';
+                    }
+                }
+            });
+            
+            if (inList) {
+                html += '</ul>';
+            }
+            
+            return html;
+        }
+
+        function renderTermine(termine) {
+            console.log('renderTermine aufgerufen mit:', termine); // Debug
+            
+            const heute = new Date();
+            heute.setHours(0, 0, 0, 0);
+
+            // Termine mit Datum-Objekt versehen
+            const termineWithDate = termine.map(t => {
+                const dateObj = parseDatum(t.datum);
+                console.log(`Datum "${t.datum}" geparst zu:`, dateObj); // Debug
+                return {
+                    ...t,
+                    dateObj: dateObj
+                };
+            }).filter(t => t.dateObj !== null);
+
+            console.log('Termine nach Parsing:', termineWithDate.length); // Debug
+
+            // Sortieren nach Datum
+            termineWithDate.sort((a, b) => a.dateObj - b.dateObj);
+
+            // Nur kommende Termine
+            const kommend = termineWithDate.filter(t => t.dateObj >= heute);
+
+            console.log(`Kommende Termine: ${kommend.length}`); // Debug
+
+            // HTML-Container holen
+            const naechsterContainer = document.getElementById('naechster-termin');
+            const kommendeContainer = document.getElementById('kommende-termine');
+            
+            naechsterContainer.innerHTML = '';
+            kommendeContainer.innerHTML = '';
+
+            if (kommend.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="no-data" style="grid-column: 1 / -1;">Keine kommenden Termine vorhanden</div>';
+                return;
+            }
+
+            // Nächster Termin (links, groß)
+            const naechsterTermin = kommend[0];
+            const tageVon = Math.floor((naechsterTermin.dateObj - heute) / (1000 * 60 * 60 * 24));
+            
+            // Prüfe ob termin.start eine Uhrzeit (HH:MM) oder Custom-Text ist
+            let zeitAnzeige = '';
+            if (naechsterTermin.start) {
+                if (naechsterTermin.start.match(/^\d{1,2}:\d{2}$/)) {
+                    // Es ist eine Uhrzeit
+                    zeitAnzeige = `🕐 ${naechsterTermin.start} Uhr`;
+                } else {
+                    // Es ist Emoji+Text oder Custom-Text
+                    zeitAnzeige = naechsterTermin.start;
+                }
+            }
+            
+            naechsterContainer.innerHTML = `
+                <div class="termin naechster">
+                    <div class="termin-header">
+                        <div class="termin-date-time">
+                            <span class="termin-datum">${formatDatum(naechsterTermin.dateObj)}</span>
+                            ${zeitAnzeige ? `<span class="termin-zeit">${zeitAnzeige}</span>` : ''}
+                        </div>
+                        <span class="termin-tag">${getWochentag(naechsterTermin.dateObj)} (${getTageString(tageVon)})</span>
+                    </div>
+                    <div class="termin-content-row">
+                        <div class="termin-left">
+                            <div class="termin-titel">${naechsterTermin.titel}</div>
+                            ${naechsterTermin.beschreibung ? `<div class="termin-beschreibung">${formatText(naechsterTermin.beschreibung)}</div>` : ''}
+                        </div>
+                        ${(naechsterTermin.wo || naechsterTermin.wer) ? `<div class="termin-details">
+                            ${naechsterTermin.wo ? `<div class="termin-info">📍 ${naechsterTermin.wo}</div>` : ''}
+                            ${naechsterTermin.wer ? `<div class="termin-info">👤 ${naechsterTermin.wer}</div>` : ''}
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Folgende Termine (rechts, kompakter)
+            const folgendTermine = kommend.slice(1, 4); // Die nächsten 2-3 Termine
+            
+            folgendTermine.forEach((termin) => {
+                const tageVon = Math.floor((termin.dateObj - heute) / (1000 * 60 * 60 * 24));
+                
+                // Prüfe ob termin.start eine Uhrzeit (HH:MM) oder Custom-Text ist
+                let zeitAnzeige = '';
+                if (termin.start) {
+                    if (termin.start.match(/^\d{1,2}:\d{2}$/)) {
+                        // Es ist eine Uhrzeit
+                        zeitAnzeige = `🕐 ${termin.start} Uhr`;
+                    } else {
+                        // Es ist Emoji+Text oder Custom-Text
+                        zeitAnzeige = termin.start;
+                    }
+                }
+                
+                kommendeContainer.innerHTML += `
+                    <div class="termin kommend">
+                        <div class="termin-header">
+                            <div class="termin-date-time">
+                                <span class="termin-datum">${formatDatum(termin.dateObj)}</span>
+                                ${zeitAnzeige ? `<span class="termin-zeit">${zeitAnzeige}</span>` : ''}
+                            </div>
+                            <span class="termin-tag">${getWochentag(termin.dateObj)} (${getTageString(tageVon)})</span>
+                        </div>
+                        <div class="termin-content-row">
+                            <div class="termin-left">
+                                <div class="termin-titel">${termin.titel}</div>
+                                ${termin.beschreibung ? `<div class="termin-beschreibung">${formatText(termin.beschreibung)}</div>` : ''}
+                            </div>
+                            ${(termin.wo || termin.wer) ? `<div class="termin-details">
+                                ${termin.wo ? `<div class="termin-info">📍 ${termin.wo}</div>` : ''}
+                                ${termin.wer ? `<div class="termin-info">👤 ${termin.wer}</div>` : ''}
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update Zeit anzeigen
+            const jetzt = new Date();
+            document.getElementById('last-update').textContent = 
+                `${String(jetzt.getHours()).padStart(2, '0')}:${String(jetzt.getMinutes()).padStart(2, '0')} Uhr`;
+        }
+
+        // LocalStorage Key für Cache
+        const CACHE_KEY = 'termine_cache';
+        const CACHE_TIMESTAMP_KEY = 'termine_cache_timestamp';
+
+        // Lade gecachte Termine aus LocalStorage
+        function loadCachedTermine() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const termine = JSON.parse(cached);
+                    console.log('Gecachte Termine geladen:', termine.length);
+                    return termine;
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden aus Cache:', error);
+            }
+            return null;
+        }
+
+        // Speichere Termine im LocalStorage
+        function cacheTermine(termine) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(termine));
+                localStorage.setItem(CACHE_TIMESTAMP_KEY, new Date().toISOString());
+            } catch (error) {
+                console.error('Fehler beim Speichern im Cache:', error);
+            }
+        }
+
+        async function loadTermine(showLoadingIndicator = false) {
+            const lastUpdateElement = document.getElementById('last-update');
+            
+            try {
+                if (APPS_SCRIPT_URL === 'HIER_DEINE_APPS_SCRIPT_URL_EINFÜGEN') {
+                    document.getElementById('content').innerHTML = `
+                        <div class="error">
+                            <strong>⚠️ Konfiguration erforderlich</strong><br><br>
+                            Bitte richte zuerst das Google Apps Script ein und trage die URL hier ein.<br><br>
+                            <strong>Anleitung siehe: google-apps-script.js</strong>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Subtiler Ladeindikator nur beim Refresh
+                if (showLoadingIndicator) {
+                    lastUpdateElement.parentElement.classList.add('loading');
+                }
+
+                const response = await fetch(APPS_SCRIPT_URL);
+                if (!response.ok) throw new Error('Fehler beim Laden der Daten');
+
+                const data = await response.json();
+                console.log('API Response:', data); // Debug
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Unbekannter Fehler');
+                }
+                
+                console.log('Termine geladen:', data.termine.length); // Debug
+                
+                if (!data.termine || data.termine.length === 0) {
+                    document.getElementById('content').innerHTML = `
+                        <div class="no-data">
+                            <strong>Keine Termine vorhanden</strong><br><br>
+                            Trage Termine in deine Google Sheets Tabelle ein.<br>
+                            Format: Datum | Start | Thema/Was | Wo | Wer<br><br>
+                            Anzahl geladener Termine: ${data.count || 0}
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Neue Termine im Cache speichern
+                cacheTermine(data.termine);
+                
+                // Termine anzeigen
+                renderTermine(data.termine);
+                
+            } catch (error) {
+                console.error('Fehler:', error);
+                
+                // Bei Fehler: Versuche gecachte Daten zu verwenden
+                const cachedTermine = loadCachedTermine();
+                if (cachedTermine && cachedTermine.length > 0) {
+                    console.log('Verwende gecachte Daten wegen Fehler');
+                    renderTermine(cachedTermine);
+                    lastUpdateElement.textContent = 'Offline-Daten';
+                } else {
+                    // Nur wenn kein Cache vorhanden ist, Fehler anzeigen
+                    document.getElementById('content').innerHTML = `
+                        <div class="error">
+                            <strong>Fehler beim Laden der Termine</strong><br>
+                            ${error.message}<br><br>
+                            Stelle sicher, dass das Google Apps Script korrekt eingerichtet wurde.<br><br>
+                            <strong>Öffne die Browser-Konsole (F12) für mehr Details.</strong>
+                        </div>
+                    `;
+                }
+            } finally {
+                // Ladeindikator entfernen
+                if (showLoadingIndicator) {
+                    lastUpdateElement.parentElement.classList.remove('loading');
+                }
+            }
+        }
+
+        // Beim Start: Sofort gecachte Daten anzeigen, dann im Hintergrund aktualisieren
+        (function init() {
+            const cachedTermine = loadCachedTermine();
+            if (cachedTermine && cachedTermine.length > 0) {
+                // Sofort gecachte Daten anzeigen (keine Wartezeit!)
+                renderTermine(cachedTermine);
+                const cacheTime = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+                if (cacheTime) {
+                    const cacheDate = new Date(cacheTime);
+                    document.getElementById('last-update').textContent = 
+                        `${String(cacheDate.getHours()).padStart(2, '0')}:${String(cacheDate.getMinutes()).padStart(2, '0')} Uhr (Cache)`;
+                }
+                // Im Hintergrund neue Daten laden
+                loadTermine(true);
+            } else {
+                // Kein Cache: Direkt Daten laden
+                loadTermine(false);
+            }
+        })();
+
+        // Alle 5 Minuten aktualisieren (mit Ladeindikator)
+        setInterval(() => loadTermine(true), 5 * 60 * 1000);
+    </script>
+</body>
+
+</html>
